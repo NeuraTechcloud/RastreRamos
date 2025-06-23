@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR" class="scroll-smooth">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>RastreRamos - Rastreamento Veicular Premium</title>
+
+    
+
+    <!-- Tailwind CSS -->
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+
+        tailwind.config = {
+
+            theme: {
+
+                extend: {
+
+                    colors: {
+
+                        'primary': {
+
+                            '50': '#fffbeb',
+
+                            '100': '#fef3c7',
+
+                            '200': '#fde68a',
+
+                            '300': '#fcd34d',
+
+                            '400': '#fbbf24',
+
+                            '500': '#f59e0b',
+
+                            '600': '#d97706',
+
+                            '700': '#b45309',
+
+                            '800': '#92400e',
+
+                            '900': '#78350f',
+
+                        },
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    </script>
+
+    
+
+    <!-- Leaflet CSS (para o mapa) -->
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+    
+
+    <!-- Leaflet JS -->
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    
+
+    <!-- Google Fonts: Inter -->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+
+
+    <style>
+
+        /* Estilo base para a aplicação */
+
+        body {
+
+            font-family: 'Inter', sans-serif;
+
+            -webkit-font-smoothing: antialiased;
+
+            -moz-osx-font-smoothing: grayscale;
+
+        }
+
+        /* Garante que o container do mapa ocupe o espaço disponível */
+
+        #map {
+
+            height: 100vh;
+
+            width: 100%;
+
+            z-index: 10;
+
+        }
+
+        /* Custom scrollbar for vehicle list */
+
+        .custom-scrollbar::-webkit-scrollbar {
+
+            width: 8px;
+
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+
+            background: #27272a;
+
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+
+            background: #a16207;
+
+            border-radius: 10px;
+
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+
+            background: #f59e0b;
+
+        }
+
+        /* Nova imagem de fundo, mais relevante para o serviço */
+
+        .hero-bg {
+
+            background: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('https://placehold.co/1920x1080/000000/f59e0b?text=Rastreamento+Avançado+em+Tempo+Real');
+
+            background-size: cover;
+
+            background-position: center;
+
+        }
+
+        /* Correção da cor de fundo das opções do seletor de mapa no modo escuro */
+
+        select option {
+
+            background: #18181b; /* Cor de fundo escura para as opções */
+
+            color: white;
+
+        }
+
+        /* Estilo para o interruptor (toggle switch) */
+
+        .toggle-checkbox:checked {
+
+            right: 0;
+
+            border-color: #f59e0b;
+
+        }
+
+        .toggle-checkbox:checked + .toggle-label {
+
+            background-color: #f59e0b;
+
+        }
+
+    </style>
+
+</head>
+
+<body class="bg-gray-100 dark:bg-black text-gray-800 dark:text-gray-200">
+
+
+
+    <!-- =========== PÁGINA PRINCIPAL (HOMEPAGE/MARKETING) =========== -->
+
+    <div id="homepage">
+
+        <header class="bg-black/80 backdrop-blur-sm fixed w-full z-50">
+
+            <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+
+                <div class="text-2xl font-bold text-white">
+
+                     <a href="#hero" class="flex items-center space-x-2">
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+
+                        </svg>
+
+                        <span>RastreRamos</span>
+
+                     </a>
+
+                </div>
+
+                <ul class="hidden md:flex items-center space-x-8 text-gray-300">
+
+                    <li><a href="#features" class="hover:text-white transition-colors">Recursos</a></li>
+
+                    <li><a href="#how-it-works" class="hover:text-white transition-colors">Como Funciona</a></li>
+
+                    <li><a href="#pricing" class="hover:text-white transition-colors">Planos</a></li>
+
+                    <li><a href="#faq" class="hover:text-white transition-colors">FAQ</a></li>
+
+                    <li><a href="#quote" class="hover:text-white transition-colors">Orçamento</a></li>
+
+                </ul>
+
+                <button id="go-to-login-btn" class="bg-primary-500 hover:bg-primary-600 text-black font-bold py-2 px-6 rounded-lg transition-colors">
+
+                    Login
+
+                </button>
+
+            </nav>
+
+        </header>
+
+
+
+        <main class="bg-black text-white">
+
+            <!-- Hero Section -->
+
+            <section id="hero" class="hero-bg min-h-screen flex items-center">
+
+                <div class="container mx-auto px-6 text-center">
+
+                    <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-4">Controle Total da Sua Frota na Palma da Sua Mão</h1>
+
+                    <p class="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-8">Tecnologia de ponta em rastreamento veicular para garantir a segurança do seu patrimônio e a eficiência da sua operação. 24 horas por dia.</p>
+
+                    <a href="#pricing" class="bg-primary-500 text-black font-bold py-3 px-8 rounded-lg text-lg hover:bg-primary-600 transition-transform transform hover:scale-105">Conheça Nossos Planos</a>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- Video Section -->
+
+            <section id="video-section" class="py-20 bg-black">
+
+                <div class="container mx-auto px-6 text-center">
+
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4">Conheça a RastreRamos em Ação</h2>
+
+                    <p class="text-gray-400 max-w-2xl mx-auto mb-8">Veja como nossa plataforma é simples e poderosa. Assista ao vídeo e descubra como podemos transformar a gestão da sua frota.</p>
+
+                    <div id="play-video-btn" class="relative max-w-4xl mx-auto rounded-xl overflow-hidden shadow-2xl cursor-pointer group">
+
+                        <img src="https://img.youtube.com/vi/JAUGTeG1nJs/hqdefault.jpg" alt="Vídeo de apresentação da plataforma RastreRamos" class="w-full h-auto transition-transform duration-300 group-hover:scale-105">
+
+                        <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+
+                            <div class="bg-white/30 backdrop-blur-sm p-6 rounded-full group-hover:bg-white/40 transition-all duration-300">
+
+                                <svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+
+
+            <!-- Features Section -->
+
+            <section id="features" class="py-20 bg-gray-900">
+
+                <div class="container mx-auto px-6">
+
+                    <div class="text-center mb-12"><h2 class="text-3xl md:text-4xl font-bold">Recursos que Fazem a Diferença</h2><p class="text-gray-400 mt-2">Tudo o que você precisa para uma gestão completa e segura.</p></div>
+
+                    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+
+                        <div class="bg-gray-800 p-8 rounded-xl shadow-lg text-center transition-transform transform hover:-translate-y-2"><div class="bg-primary-900/50 text-primary-400 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"><svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg></div><h3 class="text-xl font-bold mb-2">Localização em Tempo Real</h3><p class="text-gray-400">Acompanhe seus veículos em tempo real, 24/7, de qualquer dispositivo.</p></div>
+
+                        <div class="bg-gray-800 p-8 rounded-xl shadow-lg text-center transition-transform transform hover:-translate-y-2"><div class="bg-primary-900/50 text-primary-400 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"><svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div><h3 class="text-xl font-bold mb-2">Histórico de Rotas</h3><p class="text-gray-400">Acesse o histórico detalhado de percursos, paradas e velocidades.</p></div>
+
+                        <div class="bg-gray-800 p-8 rounded-xl shadow-lg text-center transition-transform transform hover:-translate-y-2"><div class="bg-primary-900/50 text-primary-400 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"><svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg></div><h3 class="text-xl font-bold mb-2">Alertas Inteligentes</h3><p class="text-gray-400">Receba notificações de ignição, excesso de velocidade, cercas virtuais e mais.</p></div>
+
+                        <div class="bg-gray-800 p-8 rounded-xl shadow-lg text-center transition-transform transform hover:-translate-y-2"><div class="bg-primary-900/50 text-primary-400 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"><svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg></div><h3 class="text-xl font-bold mb-2">Bloqueio Remoto</h3><p class="text-gray-400">Em caso de roubo ou furto, bloqueie o veículo com apenas um clique.</p></div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- How it Works Section -->
+
+            <section id="how-it-works" class="py-20 bg-black">
+
+                <div class="container mx-auto px-6">
+
+                    <div class="text-center mb-12"><h2 class="text-3xl md:text-4xl font-bold">Simples, Rápido e Eficiente</h2><p class="text-gray-400 mt-2">Comece a rastrear em apenas 3 passos.</p></div>
+
+                    <div class="grid md:grid-cols-3 gap-8 text-center max-w-4xl mx-auto">
+
+                        <div class="flex flex-col items-center"><div class="text-5xl font-extrabold text-primary-500 mb-2">1</div><h3 class="text-xl font-bold mb-2">Instalação Profissional</h3><p class="text-gray-400">Nossos técnicos instalam o dispositivo de forma rápida e segura no seu veículo.</p></div>
+
+                        <div class="flex flex-col items-center"><div class="text-5xl font-extrabold text-primary-500 mb-2">2</div><h3 class="text-xl font-bold mb-2">Acesso à Plataforma</h3><p class="text-gray-400">Você recebe seu login e senha para acessar nosso sistema via web ou app.</p></div>
+
+                        <div class="flex flex-col items-center"><div class="text-5xl font-extrabold text-primary-500 mb-2">3</div><h3 class="text-xl font-bold mb-2">Monitore 24/7</h3><p class="text-gray-400">Pronto! Acompanhe tudo em tempo real e tenha controle total.</p></div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            
+
+            <!-- Pricing Section -->
+
+            <section id="pricing" class="py-20 bg-gray-900">
+
+                <div class="container mx-auto px-6">
+
+                    <div class="text-center mb-12"><h2 class="text-3xl md:text-4xl font-bold">Planos Flexíveis para Você</h2><p class="text-gray-400 mt-2">Escolha o plano que melhor se adapta à sua necessidade.</p></div>
+
+                    <div class="grid lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+
+                        <div class="bg-gray-800 border border-gray-700 rounded-xl p-8 flex flex-col hover:shadow-xl transition-shadow"><h3 class="text-xl font-bold mb-2">Particular</h3><p class="text-gray-400 mb-4">Proteção essencial para seu carro ou moto.</p><div class="my-4"><span class="text-4xl font-extrabold">R$ 49</span><span class="text-gray-500">,90/mês</span></div><ul class="space-y-3 text-gray-300 flex-1"><li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Localização em tempo real</li><li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Histórico de 30 dias</li><li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Alertas de ignição e cerca</li></ul><button class="mt-8 w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg transition-colors">Contratar Agora</button></div>
+
+                        <div class="bg-gray-800 border-2 border-primary-500 rounded-xl p-8 flex flex-col relative shadow-2xl transform hover:scale-105 transition-transform"><div class="absolute top-0 -translate-y-1/2 bg-primary-500 text-black px-4 py-1 text-sm font-bold rounded-full">MAIS POPULAR</div><h3 class="text-xl font-bold mb-2 text-primary-500">Frota Essencial</h3><p class="text-gray-400 mb-4">Gestão completa para pequenas e médias frotas.</p><div class="my-4"><span class="text-4xl font-extrabold">R$ 69</span><span class="text-gray-500">,90/mês</span></div><ul class="space-y-3 text-gray-300 flex-1"><li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Todos os recursos do Particular</li><li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Histórico de 90 dias</li><li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Bloqueio Remoto</li><li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Relatórios de paradas</li></ul><button class="mt-8 w-full bg-primary-500 hover:bg-primary-600 text-black font-bold py-3 px-6 rounded-lg transition-colors">Contratar Agora</button></div>
+
+                        <div class="bg-gray-800 border border-gray-700 rounded-xl p-8 flex flex-col hover:shadow-xl transition-shadow"><h3 class="text-xl font-bold mb-2">Corporativo</h3><p class="text-gray-400 mb-4">Soluções avançadas para grandes operações.</p><div class="my-4"><span class="text-4xl font-extrabold">Sob Consulta</span></div><ul class="space-y-3 text-gray-300 flex-1"><li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Todos os recursos do Frota</li><li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Telemetria avançada</li><li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>API para integração</li><li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Suporte dedicado</li></ul><button class="mt-8 w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg transition-colors">Fale Conosco</button></div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- Testimonials Section -->
+
+            <section id="testimonials" class="py-20 bg-black">
+
+                <div class="container mx-auto px-6">
+
+                    <div class="text-center mb-12"><h2 class="text-3xl md:text-4xl font-bold">O que Nossos Clientes Dizem</h2><p class="text-gray-400 mt-2">A confiança de quem usa e aprova nossos serviços.</p></div>
+
+                    <div class="grid md:grid-cols-1 lg:grid-cols-3 gap-8">
+
+                        <div class="bg-gray-900 p-8 rounded-xl shadow-lg"><p class="text-gray-300 mb-4">"Desde que instalei o RastreRamos na minha frota, a economia de combustível e a otimização das rotas foram notáveis. Plataforma excelente e fácil de usar!"</p><div class="font-bold">João D.</div><div class="text-sm text-gray-500">Gerente de Logística</div></div>
+
+                        <div class="bg-gray-900 p-8 rounded-xl shadow-lg"><p class="text-gray-300 mb-4">"A segurança do meu carro é prioridade. Com o alerta de ignição e o bloqueio remoto, fico muito mais tranquilo. Recomendo a todos."</p><div class="font-bold">Mariana S.</div><div class="text-sm text-gray-500">Cliente Particular</div></div>
+
+                        <div class="bg-gray-900 p-8 rounded-xl shadow-lg"><p class="text-gray-300 mb-4">"O suporte técnico é incrível. Tive uma dúvida sobre relatórios e fui atendido rapidamente. A parceria com a RastreRamos foi um divisor de águas para nossa empresa."</p><div class="font-bold">Carlos Andrade</div><div class="text-sm text-gray-500">Diretor, Andrade Transportes</div></div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- FAQ Section -->
+
+            <section id="faq" class="py-20 bg-gray-900">
+
+                <div class="container mx-auto px-6 max-w-4xl">
+
+                    <div class="text-center mb-12"><h2 class="text-3xl md:text-4xl font-bold">Perguntas Frequentes</h2><p class="text-gray-400 mt-2">Tire suas dúvidas sobre nossos serviços.</p></div>
+
+                    <div class="space-y-4">
+
+                        <details class="bg-gray-800 p-6 rounded-lg group"><summary class="font-semibold cursor-pointer flex justify-between items-center">A instalação danifica meu veículo?<span class="transform transition-transform duration-300 group-open:rotate-180">+</span></summary><p class="mt-4 text-gray-400">Não. Nossos técnicos são altamente qualificados e a instalação é feita de forma segura, sem alterar a originalidade ou garantia do seu veículo.</p></details>
+
+                        <details class="bg-gray-800 p-6 rounded-lg group"><summary class="font-semibold cursor-pointer flex justify-between items-center">O rastreador consome a bateria do veículo?<span class="transform transition-transform duration-300 group-open:rotate-180">+</span></summary><p class="mt-4 text-gray-400">O consumo é mínimo. Nossos dispositivos possuem um modo de hibernação inteligente que economiza energia quando o veículo está desligado, não afetando a vida útil da bateria.</p></details>
+
+                        <details class="bg-gray-800 p-6 rounded-lg group"><summary class="font-semibold cursor-pointer flex justify-between items-center">Posso acessar a localização pelo celular?<span class="transform transition-transform duration-300 group-open:rotate-180">+</span></summary><p class="mt-4 text-gray-400">Sim! Nossa plataforma é totalmente responsiva e pode ser acessada por qualquer navegador de celular. Também oferecemos aplicativos dedicados para Android e iOS.</p></details>
+
+                        <details class="bg-gray-800 p-6 rounded-lg group"><summary class="font-semibold cursor-pointer flex justify-between items-center">Como funciona o bloqueio em caso de roubo?<span class="transform transition-transform duration-300 group-open:rotate-180">+</span></summary><p class="mt-4 text-gray-400">Através da nossa central de emergência 24h ou pelo seu próprio aplicativo, você pode solicitar o bloqueio. O comando é enviado ao veículo, que interrompe a alimentação de combustível de forma segura, imobilizando-o.</p></details>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            
+
+            <!-- Quote Section -->
+
+            <section id="quote" class="py-20 bg-black">
+
+                <div class="container mx-auto px-6">
+
+                     <div class="bg-gray-900 p-8 md:p-12 rounded-2xl shadow-xl">
+
+                        <div class="grid md:grid-cols-2 gap-12 items-center">
+
+                            <div>
+
+                                <h2 class="text-3xl md:text-4xl font-bold">Solicite um Orçamento</h2><p class="text-gray-400 mt-2 mb-6">Fale com nossos especialistas e descubra a solução ideal para você ou sua empresa. Sem compromisso.</p>
+
+                                <form action="#" method="POST">
+
+                                    <div class="space-y-4">
+
+                                        <input type="text" placeholder="Seu nome completo" class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500">
+
+                                        <input type="email" placeholder="Seu melhor e-mail" class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500">
+
+                                        <input type="tel" placeholder="Telefone / WhatsApp" class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500">
+
+                                        <textarea placeholder="Como podemos ajudar? (Ex: Quantidade de veículos...)" rows="4" class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500"></textarea>
+
+                                        <button type="submit" class="w-full bg-primary-500 hover:bg-primary-600 text-black font-bold py-3 px-6 rounded-lg transition-colors">Enviar Solicitação</button>
+
+                                    </div>
+
+                                </form>
+
+                            </div>
+
+                            <div class="hidden md:block text-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-48 h-48 mx-auto text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg><p class="mt-4 text-gray-400">Nossa equipe entrará em contato em breve!</p></div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+        
+
+        <footer class="bg-black text-gray-400 py-8 border-t border-gray-800">
+
+            <div class="container mx-auto px-6 text-center"><p>&copy; 2024 RastreRamos. Todos os direitos reservados.</p><p class="text-sm text-gray-500 mt-1">Segurança e tecnologia para o seu caminho.</p></div>
+
+        </footer>
+
+    </div>
+
+
+
+    <!-- =========== TELA DE LOGIN =========== -->
+
+    <div id="login-page" class="hidden flex items-center justify-center h-screen bg-black">
+
+        <div class="w-full max-w-md p-8 space-y-6 bg-gray-900 rounded-2xl shadow-xl mx-4">
+
+            <div class="text-center">
+
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+
+                <h1 class="mt-4 text-3xl font-bold text-white">RastreRamos Premium</h1>
+
+                <p class="mt-2 text-sm text-gray-400">Faça login para acessar sua conta.</p>
+
+            </div>
+
+            
+
+            <form id="login-form" class="mt-8 space-y-6">
+
+                <div class="rounded-md shadow-sm -space-y-px">
+
+                    <input id="email-address" name="email" type="email" autocomplete="email" required class="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-600 placeholder-gray-500 text-white bg-gray-800 rounded-t-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm" placeholder="Email" value="cliente@rastreramos.com">
+
+                    <input id="password" name="password" type="password" autocomplete="current-password" required class="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-600 placeholder-gray-500 text-white bg-gray-800 rounded-b-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm" placeholder="Senha" value="senha123">
+
+                </div>
+
+                <div id="login-error" class="text-red-500 text-sm text-center hidden">Email ou senha inválidos.</div>
+
+                <div><button type="submit" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-black bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-primary-500 transition-colors">Entrar</button></div>
+
+            </form>
+
+            <div class="relative flex py-2 items-center"><div class="flex-grow border-t border-gray-600"></div><span class="flex-shrink mx-4 text-gray-400 text-sm">OU</span><div class="flex-grow border-t border-gray-600"></div></div>
+
+            <div><button id="guest-login-btn" class="group relative w-full flex justify-center py-3 px-4 border border-gray-500 text-sm font-medium rounded-md text-gray-200 bg-transparent hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-primary-500 transition-colors">Acessar como Convidado</button></div>
+
+             <button id="back-to-home-btn" class="text-center text-sm w-full mt-4 p-2 border border-primary-500/50 text-primary-500/80 hover:text-primary-500 hover:border-primary-500 rounded-lg transition-colors">Voltar para a página inicial</button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========== TELA DO CLIENTE (DASHBOARD) =========== -->
+
+    <div id="dashboard-page" class="hidden h-screen w-screen bg-black">
+
+        <div class="flex h-full w-full">
+
+            <!-- Painel Lateral (Slide-in) -->
+
+            <aside id="dashboard-panel" class="absolute lg:static z-30 w-full max-w-xs xl:max-w-sm h-full bg-gray-900 border-r border-gray-800 shadow-lg flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+
+                <div class="flex items-center justify-between p-4 border-b border-gray-800">
+
+                    <div><h2 class="text-lg font-bold text-white" id="welcome-message">Bem-vindo!</h2><p class="text-xs text-gray-400">Monitoramento em tempo real</p></div>
+
+                    <div class="flex items-center space-x-2">
+
+                        <button id="settings-btn" class="p-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors" title="Configurações">
+
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.96.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01-.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" /></svg>
+
+                        </button>
+
+                        <button id="logout-btn" class="p-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors" title="Sair"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg></button>
+
+                    </div>
+
+                </div>
+
+                <div class="flex-1 overflow-y-auto custom-scrollbar">
+
+                    <div class="p-4 flex justify-between items-center">
+
+                        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Meus Veículos</h3>
+
+                        <button id="add-gps-btn" class="text-primary-500 hover:text-primary-400 transition-colors">
+
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+
+                            </svg>
+
+                        </button>
+
+                    </div>
+
+                    <ul id="vehicle-list" class="space-y-1 px-2 pb-4"></ul>
+
+                </div>
+
+                <div class="p-4 border-t border-gray-800 space-y-4">
+
+                    <div>
+
+                        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Ferramentas</h3>
+
+                        <div class="grid grid-cols-2 gap-2" id="tool-buttons">
+
+                             <button data-tool="history" class="flex items-center justify-center p-3 text-sm text-gray-300 bg-gray-800 rounded-lg hover:bg-primary-700 hover:text-white transition-all"><svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>Histórico</button>
+
+                             <button data-tool="reports" class="flex items-center justify-center p-3 text-sm text-gray-300 bg-gray-800 rounded-lg hover:bg-primary-700 hover:text-white transition-all"><svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>Relatórios</button>
+
+                             <button data-tool="alerts" class="flex items-center justify-center p-3 text-sm text-gray-300 bg-gray-800 rounded-lg hover:bg-primary-700 hover:text-white transition-all"><svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>Alertas</button>
+
+                             <button data-tool="fences" class="flex items-center justify-center p-3 text-sm text-gray-300 bg-gray-800 rounded-lg hover:bg-primary-700 hover:text-white transition-all"><svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h8a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.761 14h8.478" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v7m0 0l-3-3m3 3l3-3" /></svg>Cercas</button>
+
+                        </div>
+
+                    </div>
+
+                     <div>
+
+                        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Opções</h3>
+
+                        <div class="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
+
+                            <label for="realtime-toggle" class="text-sm text-gray-300">Rastreio em Tempo Real</label>
+
+                            <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+
+                                <input type="checkbox" name="realtime-toggle" id="realtime-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+
+                                <label for="realtime-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"></label>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </aside>
+
+
+
+            <!-- Área Principal (Mapa) -->
+
+            <main class="flex-1 relative">
+
+                <div id="map"></div>
+
+                 <!-- Botão para abrir menu no mobile -->
+
+                <button id="menu-toggle-btn" class="lg:hidden absolute top-4 left-4 z-20 p-2 bg-gray-900/70 text-white rounded-md backdrop-blur-sm">
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+
+                    </svg>
+
+                </button>
+
+                <div id="map-controls" class="absolute top-4 right-4 z-20 bg-gray-900 p-1 rounded-lg shadow-lg">
+
+                    <select id="map-layer-selector" class="bg-gray-800 border-gray-700 text-white focus:ring-primary-500 focus:border-primary-500 text-sm rounded-md p-2">
+
+                        <option value="osm_dark">OpenStreetMap (Escuro)</option>
+
+                        <option value="osm_light">OpenStreetMap (Claro)</option>
+
+                        <option value="google_roadmap">Google Maps</option>
+
+                        <option value="google_satellite">Google Satélite</option>
+
+                    </select>
+
+                </div>
+
+            </main>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- Modal Base (Genérico) -->
+
+    <div id="modal-container" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 transition-opacity duration-300 opacity-0">
+
+        <div class="bg-gray-800 text-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4 transform transition-all scale-95 opacity-0" id="modal-content-area">
+
+            <!-- Conteúdo do modal será inserido aqui -->
+
+        </div>
+
+    </div>
+
+    <!-- Overlay para o painel mobile -->
+
+    <div id="panel-overlay" class="hidden lg:hidden fixed inset-0 bg-black bg-opacity-50 z-20"></div>
+
+
+
+    <!-- Modal do Vídeo -->
+
+    <div id="video-modal" class="hidden fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 transition-opacity duration-300 opacity-0">
+
+        <button id="video-close-btn" class="absolute top-4 right-4 text-white text-4xl">&times;</button>
+
+        <div id="youtube-player-container" class="w-full max-w-4xl aspect-video p-4">
+
+            <!-- Iframe do YouTube será inserido aqui -->
+
+        </div>
+
+    </div>
+
+
+
+    <script>
+
+    document.addEventListener('DOMContentLoaded', () => {
+
+
+
+        // --- ELEMENTOS DO DOM ---
+
+        const homepage = document.getElementById('homepage');
+
+        const loginPage = document.getElementById('login-page');
+
+        const dashboardPage = document.getElementById('dashboard-page');
+
+        const dashboardPanel = document.getElementById('dashboard-panel');
+
+        const panelOverlay = document.getElementById('panel-overlay');
+
+        const menuToggleBtn = document.getElementById('menu-toggle-btn');
+
+        
+
+        const goToLoginBtn = document.getElementById('go-to-login-btn');
+
+        const backToHomeBtn = document.getElementById('back-to-home-btn');
+
+        const loginForm = document.getElementById('login-form');
+
+        const guestLoginBtn = document.getElementById('guest-login-btn');
+
+        const logoutBtn = document.getElementById('logout-btn');
+
+        const loginError = document.getElementById('login-error');
+
+        const welcomeMessage = document.getElementById('welcome-message');
+
+        const vehicleList = document.getElementById('vehicle-list');
+
+        const mapLayerSelector = document.getElementById('map-layer-selector');
+
+        const addGpsBtn = document.getElementById('add-gps-btn');
+
+        const realtimeToggle = document.getElementById('realtime-toggle');
+
+
+
+        // Modal
+
+        const toolButtonsContainer = document.getElementById('tool-buttons');
+
+        const modalContainer = document.getElementById('modal-container');
+
+        const modalContentArea = document.getElementById('modal-content-area');
+
+
+
+        // Video Modal
+
+        const playVideoBtn = document.getElementById('play-video-btn');
+
+        const videoModal = document.getElementById('video-modal');
+
+        const videoCloseBtn = document.getElementById('video-close-btn');
+
+        const youtubePlayerContainer = document.getElementById('youtube-player-container');
+
+        const YOUTUBE_VIDEO_ID = 'JAUGTeG1nJs'; // <-- Substitua pelo ID do seu vídeo
+
+
+
+        // --- ESTADO DA APLICAÇÃO ---
+
+        let map;
+
+        let vehicleMarkers = {};
+
+        let mapLayers = {};
+
+        let currentUserVehicles = [];
+
+        let simulationInterval = null;
+
+        let historyLayer = null;
+
+
+
+        // --- DADOS MOCK ---
+
+        const guestVehicles = [ { id: 1, name: 'SUV de Demonstração', plate: 'GUEST01', imei: '358723000000001', status: 'online', speed: 62, lat: -22.9083, lng: -43.1964, address: 'Av. Pres. Vargas, Rio de Janeiro - RJ', lastUpdate: 'Agora', history: {} }, { id: 2, name: 'Caminhão de Carga', plate: 'GUEST02', imei: '358723000000002', status: 'stopped', speed: 0, lat: -23.5505, lng: -46.6333, address: 'Av. Paulista, São Paulo - SP', lastUpdate: 'Há 5 min', history: {} }, { id: 3, name: 'Carro Executivo', plate: 'GUEST03', imei: '358723000000003', status: 'offline', speed: 0, lat: -15.7942, lng: -47.8825, address: 'Eixo Monumental, Brasília - DF', lastUpdate: 'Há 2 horas', history: {} }, ];
+
+        const clientVehicles = [ { id: 10, name: 'Fiat Strada', plate: 'RIO2A18', imei: '358723000000010', status: 'online', speed: 88, lat: -22.4841, lng: -42.9645, address: 'BR-101, Itaboraí - RJ', lastUpdate: 'Agora', history: {} }, { id: 11, name: 'Honda Civic', plate: 'SAO4B22', imei: '358723000000011', status: 'stopped', speed: 45, lat: -22.9774, lng: -43.2039, address: 'R. Jardim Botânico, Rio de Janeiro - RJ', lastUpdate: 'Agora', history: {} }, { id: 12, name: 'VW Nivus', plate: 'BHZ7C33', imei: '358723000000012', status: 'offline', speed: 0, lat: -19.9167, lng: -43.9345, address: 'Praça da Liberdade, Belo Horizonte - MG', lastUpdate: 'Há 15 min', history: {} }, ];
+
+        
+
+        // --- FUNÇÕES DE NAVEGAÇÃO ---
+
+        function showPage(page) {
+
+            homepage.classList.add('hidden');
+
+            loginPage.classList.add('hidden');
+
+            
+
+            // Correção para o bug de layout
+
+            dashboardPage.classList.add('hidden');
+
+            dashboardPage.classList.remove('flex'); // Garante que a classe flex seja removida
+
+
+
+            if(page === dashboardPage || page === loginPage) { document.body.classList.add('overflow-hidden'); document.documentElement.classList.add('overflow-hidden'); } 
+
+            else { document.body.classList.remove('overflow-hidden'); document.documentElement.classList.remove('overflow-hidden'); }
+
+            
+
+            page.classList.remove('hidden');
+
+            if (page === dashboardPage) {
+
+                page.classList.add('flex'); // Usa flex para o layout interno funcionar
+
+            }
+
+        }
+
+
+
+        function toggleMobilePanel() {
+
+            dashboardPanel.classList.toggle('-translate-x-full');
+
+            panelOverlay.classList.toggle('hidden');
+
+        }
+
+
+
+        // --- FUNÇÕES DO DASHBOARD ---
+
+        
+
+        function initMap() {
+
+            if (map) map.remove(); 
+
+            map = L.map('map', { zoomControl: false }).setView([-22.90, -43.20], 5);
+
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+
+
+            mapLayers.osm_dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap &copy; CartoDB', subdomains: 'abcd', maxZoom: 19 });
+
+            mapLayers.osm_light = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' });
+
+            mapLayers.google_roadmap = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{ maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3'], attribution: '&copy; Google Maps'});
+
+            mapLayers.google_satellite = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{ maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3'], attribution: '&copy; Google Maps'});
+
+
+
+            mapLayers.osm_dark.addTo(map);
+
+        }
+
+        
+
+        mapLayerSelector.addEventListener('change', (e) => {
+
+            const selectedLayer = e.target.value;
+
+            Object.values(mapLayers).forEach(layer => map.removeLayer(layer));
+
+            if (mapLayers[selectedLayer]) { mapLayers[selectedLayer].addTo(map); }
+
+        });
+
+        
+
+        function createVehicleIcon(status) {
+
+            let color = status === 'online' ? '#f59e0b' : status === 'stopped' ? '#f97316' : '#6b7280';
+
+            const iconHtml = `<div style="position: relative; width: 28px; height: 28px; transform: translate(-14px, -28px);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${color}" style="width: 28px; height: 28px; filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.4));"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"></path><circle cx="12" cy="9" r="2.5" fill="black"></circle></svg></div>`;
+
+            return L.divIcon({ html: iconHtml, className: 'vehicle-marker-icon', iconSize: [28, 28], iconAnchor: [14, 28], popupAnchor: [0, -28] });
+
+        }
+
+        
+
+        function updateVehicleMarkers(vehicles) {
+
+            vehicles.forEach(vehicle => {
+
+                const marker = vehicleMarkers[vehicle.id];
+
+                const newLatLng = L.latLng(vehicle.lat, vehicle.lng);
+
+                const popupContent = `<div class="font-sans bg-gray-900 text-white p-1 rounded-md"><h4 class="font-bold text-base mb-1 text-primary-400">${vehicle.name} - ${vehicle.plate}</h4><p><strong>Status:</strong> ${vehicle.status}</p><p><strong>Velocidade:</strong> ${vehicle.speed} km/h</p><p class="max-w-xs"><strong>Endereço:</strong> ${vehicle.address}</p></div>`;
+
+
+
+                if (marker) {
+
+                    marker.setLatLng(newLatLng);
+
+                    if (marker.isPopupOpen()) {
+
+                        marker.setPopupContent(popupContent);
+
+                    }
+
+                } else {
+
+                    const newMarker = L.marker(newLatLng, { icon: createVehicleIcon(vehicle.status) }).addTo(map);
+
+                    newMarker.bindPopup(popupContent, { className: 'dark-popup' });
+
+                    vehicleMarkers[vehicle.id] = newMarker;
+
+                }
+
+            });
+
+        }
+
+        
+
+        function populateVehicleList(vehicles) {
+
+            vehicleList.innerHTML = '';
+
+            vehicles.forEach(vehicle => {
+
+                let statusColor = vehicle.status === 'online' ? 'text-primary-500' : vehicle.status === 'stopped' ? 'text-orange-500' : 'text-gray-500';
+
+                const li = document.createElement('li');
+
+                li.className = 'cursor-pointer p-3 rounded-lg hover:bg-gray-800 transition-colors';
+
+                li.dataset.vehicleId = vehicle.id;
+
+                li.innerHTML = `<div class="flex items-center justify-between"><span class="font-semibold text-sm text-white">${vehicle.name}</span><span class="text-xs font-mono px-2 py-0.5 bg-gray-700 text-gray-300 rounded">${vehicle.plate}</span></div><div class="flex items-center text-xs mt-1.5 ${statusColor}"><span>${vehicle.status === 'online' ? `${vehicle.speed} km/h` : (vehicle.status === 'stopped' ? 'Parado' : 'Offline')} - ${vehicle.lastUpdate}</span></div><p class="text-xs text-gray-400 mt-1 truncate">${vehicle.address}</p>`;
+
+                li.addEventListener('click', () => {
+
+                    centerOnVehicle(vehicle.id);
+
+                    document.querySelectorAll('#vehicle-list li').forEach(item => item.classList.remove('bg-primary-900/40'));
+
+                    li.classList.add('bg-primary-900/40');
+
+                    if(window.innerWidth < 1024) { // Fecha o painel no mobile após clicar
+
+                       toggleMobilePanel();
+
+                    }
+
+                });
+
+                vehicleList.appendChild(li);
+
+            });
+
+        }
+
+        
+
+        function centerOnVehicle(vehicleId) {
+
+            const marker = vehicleMarkers[vehicleId];
+
+            if (marker) {
+
+                map.setView(marker.getLatLng(), 15, { animate: true, pan: { duration: 1 } });
+
+                marker.openPopup();
+
+            }
+
+        }
+
+
+
+        function initializeDashboard(userType) {
+
+            const isGuest = userType === 'guest';
+
+            currentUserVehicles = isGuest ? JSON.parse(JSON.stringify(guestVehicles)) : JSON.parse(JSON.stringify(clientVehicles));
+
+            welcomeMessage.textContent = `Bem-vindo, ${isGuest ? 'Convidado' : 'Cliente'}!`;
+
+            
+
+            if (isGuest) {
+
+                addGpsBtn.disabled = true;
+
+                addGpsBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+                addGpsBtn.title = "Função desabilitada para convidados";
+
+            } else {
+
+                addGpsBtn.disabled = false;
+
+                addGpsBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+                addGpsBtn.title = "Cadastrar novo GPS";
+
+            }
+
+            
+
+            showPage(dashboardPage);
+
+            setTimeout(() => {
+
+                initMap();
+
+                populateVehicleList(currentUserVehicles);
+
+                updateVehicleMarkers(currentUserVehicles);
+
+                if (currentUserVehicles.length > 0) {
+
+                    const group = new L.featureGroup(Object.values(vehicleMarkers));
+
+                    map.fitBounds(group.getBounds().pad(0.3));
+
+                }
+
+                 map.invalidateSize();
+
+            }, 100); 
+
+        }
+
+
+
+        // --- SIMULAÇÃO DE RASTREAMENTO EM TEMPO REAL ---
+
+        function simulateRealTimeTracking() {
+
+            currentUserVehicles.forEach(vehicle => {
+
+                if (vehicle.status === 'online') {
+
+                    vehicle.lat += (Math.random() - 0.5) * 0.001;
+
+                    vehicle.lng += (Math.random() - 0.5) * 0.001;
+
+                    vehicle.speed = Math.max(0, vehicle.speed + Math.floor(Math.random() * 21) - 10);
+
+                    if (vehicle.speed > 120) vehicle.speed = 120;
+
+                    vehicle.lastUpdate = 'Agora';
+
+                }
+
+            });
+
+            populateVehicleList(currentUserVehicles);
+
+            updateVehicleMarkers(currentUserVehicles);
+
+        }
+
+        
+
+        realtimeToggle.addEventListener('change', (e) => {
+
+            if (e.target.checked) {
+
+                if (!simulationInterval) {
+
+                    simulationInterval = setInterval(simulateRealTimeTracking, 3000);
+
+                }
+
+            } else {
+
+                clearInterval(simulationInterval);
+
+                simulationInterval = null;
+
+            }
+
+        });
+
+
+
+        // --- EVENT LISTENERS ---
+
+        goToLoginBtn.addEventListener('click', () => showPage(loginPage));
+
+        backToHomeBtn.addEventListener('click', () => showPage(homepage));
+
+        menuToggleBtn.addEventListener('click', toggleMobilePanel);
+
+        panelOverlay.addEventListener('click', toggleMobilePanel);
+
+        
+
+        loginForm.addEventListener('submit', (e) => {
+
+            e.preventDefault();
+
+            const email = e.target.email.value;
+
+            const password = e.target.password.value;
+
+            if (email === 'cliente@rastreramos.com' && password === 'senha123') {
+
+                loginError.classList.add('hidden');
+
+                initializeDashboard('client');
+
+            } else {
+
+                loginError.classList.remove('hidden');
+
+            }
+
+        });
+
+
+
+        guestLoginBtn.addEventListener('click', () => {
+
+            loginError.classList.add('hidden');
+
+            initializeDashboard('guest');
+
+        });
+
+
+
+        logoutBtn.addEventListener('click', () => {
+
+            if (map) { map.remove(); map = null; }
+
+            if(simulationInterval) {
+
+                clearInterval(simulationInterval);
+
+                simulationInterval = null;
+
+                realtimeToggle.checked = false;
+
+            }
+
+            showPage(homepage);
+
+        });
+
+
+
+        // --- LÓGICA DO MODAL (Genérico)---
+
+        function showModal(content) {
+
+            modalContentArea.innerHTML = content;
+
+            modalContainer.classList.remove('hidden');
+
+            setTimeout(() => { 
+
+                modalContainer.classList.remove('opacity-0');
+
+                modalContentArea.classList.remove('opacity-0', 'scale-95');
+
+            }, 10);
+
+            
+
+             const closeBtn = modalContentArea.querySelector('.modal-close');
+
+             if (closeBtn) {
+
+                 closeBtn.addEventListener('click', hideModal);
+
+             }
+
+        }
+
+        
+
+        function hideModal() {
+
+            modalContainer.classList.add('opacity-0');
+
+            modalContentArea.classList.add('opacity-0', 'scale-95');
+
+            setTimeout(() => {
+
+                modalContainer.classList.add('hidden');
+
+                modalContentArea.innerHTML = '';
+
+            }, 300);
+
+        }
+
+        
+
+        modalContainer.addEventListener('click', (e) => {
+
+            if (e.target === modalContainer) {
+
+                hideModal();
+
+            }
+
+        });
+
+
+
+        // --- LÓGICA DAS FERRAMENTAS ---
+
+        toolButtonsContainer.addEventListener('click', (e) => {
+
+            const button = e.target.closest('button');
+
+            if(!button) return;
+
+
+
+            const toolType = button.dataset.tool;
+
+            if(toolType === 'history') {
+
+                openHistoryModal();
+
+            } else {
+
+                const toolName = button.innerText;
+
+                const modalHtml = `
+
+                    <h3 class="text-xl font-bold text-primary-500 mb-2">${toolName}</h3>
+
+                    <p class="text-gray-300 mb-6">Esta funcionalidade está em desenvolvimento e estará disponível em breve.</p>
+
+                    <button class="modal-close bg-primary-500 hover:bg-primary-600 text-black font-bold py-2 px-6 rounded-lg transition-colors">Entendi</button>
+
+                `;
+
+                showModal(modalHtml);
+
+            }
+
+        });
+
+        
+
+        // --- LÓGICA DE CADASTRO DE GPS ---
+
+        addGpsBtn.addEventListener('click', () => {
+
+             if(addGpsBtn.disabled) return;
+
+             const formHtml = `
+
+                <form id="add-vehicle-form">
+
+                    <h3 class="text-xl font-bold text-primary-500 mb-4">Cadastrar Novo GPS</h3>
+
+                    <div class="space-y-4">
+
+                        <div>
+
+                            <label for="vehicle-name" class="block text-sm font-medium text-gray-300 mb-1">Nome do Veículo</label>
+
+                            <input type="text" id="vehicle-name" required class="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500">
+
+                        </div>
+
+                        <div>
+
+                            <label for="vehicle-plate" class="block text-sm font-medium text-gray-300 mb-1">Placa</label>
+
+                            <input type="text" id="vehicle-plate" required class="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500">
+
+                        </div>
+
+                        <div>
+
+                            <label for="gps-imei" class="block text-sm font-medium text-gray-300 mb-1">IMEI do Dispositivo</label>
+
+                            <input type="number" id="gps-imei" required class="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500">
+
+                        </div>
+
+                    </div>
+
+                    <div class="mt-6 flex justify-end space-x-4">
+
+                        <button type="button" class="modal-close px-4 py-2 text-gray-300 hover:text-white transition-colors">Cancelar</button>
+
+                        <button type="submit" class="px-4 py-2 bg-primary-500 text-black font-bold rounded-lg hover:bg-primary-600 transition-colors">Salvar Veículo</button>
+
+                    </div>
+
+                </form>
+
+            `;
+
+            showModal(formHtml);
+
+
+
+            document.getElementById('add-vehicle-form').addEventListener('submit', (e) => {
+
+                e.preventDefault();
+
+                const name = document.getElementById('vehicle-name').value;
+
+                const plate = document.getElementById('vehicle-plate').value.toUpperCase();
+
+                const imei = document.getElementById('gps-imei').value;
+
+                
+
+                const lat = -14.235004 + (Math.random() - 0.5) * 20;
+
+                const lng = -51.92528 + (Math.random() - 0.5) * 20;
+
+
+
+                const newVehicle = {
+
+                    id: Date.now(), name: name, plate: plate, imei: imei, status: 'online', speed: 0, lat: lat, lng: lng, address: 'Localização sendo adquirida...', lastUpdate: 'Agora', history: {}
+
+                };
+
+                
+
+                currentUserVehicles.push(newVehicle);
+
+                populateVehicleList(currentUserVehicles);
+
+                updateVehicleMarkers(currentUserVehicles);
+
+                hideModal();
+
+                
+
+                 setTimeout(() => {
+
+                    const successHtml = `
+
+                    <div class="text-center">
+
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+
+                        </svg>
+
+                        <h3 class="text-xl font-bold text-white mb-2">Sucesso!</h3>
+
+                        <p class="text-gray-300 mb-6">Veículo "${name}" cadastrado na plataforma.</p>
+
+                        <button class="modal-close bg-primary-500 hover:bg-primary-600 text-black font-bold py-2 px-6 rounded-lg transition-colors">OK</button>
+
+                    </div>`;
+
+                    showModal(successHtml);
+
+                }, 400);
+
+            });
+
+        });
+
+        
+
+        // --- LÓGICA DO HISTÓRICO ---
+
+        
+
+        function generateHistory(vehicle, days) {
+
+            if(vehicle.history[days]) {
+
+                return vehicle.history[days];
+
+            }
+
+            
+
+            const historyPath = [];
+
+            let { lat, lng } = vehicle;
+
+            const points = days * 10;
+
+
+
+            for(let i=0; i < points; i++) {
+
+                lat += (Math.random() - 0.5) * 0.01;
+
+                lng += (Math.random() - 0.5) * 0.01;
+
+                historyPath.push([lat, lng]);
+
+            }
+
+            vehicle.history[days] = historyPath;
+
+            return historyPath;
+
+        }
+
+
+
+        function drawHistory(path) {
+
+            clearHistory(); 
+
+            
+
+            historyLayer = L.layerGroup().addTo(map);
+
+
+
+            const trajectory = L.polyline(path, { color: '#fbbf24', weight: 4 });
+
+            historyLayer.addLayer(trajectory);
+
+
+
+            const startIcon = L.divIcon({className: 'text-green-500 font-bold', html: 'INÍCIO', iconAnchor: [20, -5]});
+
+            const endIcon = L.divIcon({className: 'text-red-500 font-bold', html: 'FIM', iconAnchor: [10, -5]});
+
+            
+
+            const startMarker = L.marker(path[0], { icon: startIcon });
+
+            const endMarker = L.marker(path[path.length - 1], { icon: endIcon });
+
+
+
+            historyLayer.addLayer(startMarker);
+
+            historyLayer.addLayer(endMarker);
+
+            
+
+            map.fitBounds(trajectory.getBounds().pad(0.1));
+
+        }
+
+
+
+        function clearHistory() {
+
+            if (historyLayer) {
+
+                map.removeLayer(historyLayer);
+
+                historyLayer = null;
+
+            }
+
+        }
+
+        
+
+        function openHistoryModal() {
+
+            const vehicleOptions = currentUserVehicles.map(v => `<option value="${v.id}">${v.name} - ${v.plate}</option>`).join('');
+
+            
+
+            const historyHtml = `
+
+                <div>
+
+                    <h3 class="text-xl font-bold text-primary-500 mb-4">Consultar Histórico</h3>
+
+                    <div class="space-y-4">
+
+                        <div>
+
+                            <label for="history-vehicle-select" class="block text-sm font-medium text-gray-300 mb-1">Selecione o Veículo</label>
+
+                            <select id="history-vehicle-select" class="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500">
+
+                                <option value="">-- Escolha um veículo --</option>
+
+                                ${vehicleOptions}
+
+                            </select>
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Selecione o Período</label>
+
+                            <div class="grid grid-cols-3 gap-2" id="history-period-buttons">
+
+                                <button data-days="1" class="p-2 text-sm bg-gray-700 rounded-lg hover:bg-primary-700 transition-colors">Hoje</button>
+
+                                <button data-days="7" class="p-2 text-sm bg-gray-700 rounded-lg hover:bg-primary-700 transition-colors">7 dias</button>
+
+                                <button data-days="15" class="p-2 text-sm bg-gray-700 rounded-lg hover:bg-primary-700 transition-colors">15 dias</button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mt-6 flex justify-between items-center">
+
+                        <button id="clear-history-btn" class="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors">Limpar Rota</button>
+
+                        <button class="modal-close px-4 py-2 bg-primary-500 text-black font-bold rounded-lg hover:bg-primary-600 transition-colors">Fechar</button>
+
+                    </div>
+
+                </div>
+
+            `;
+
+            showModal(historyHtml);
+
+
+
+            document.getElementById('history-period-buttons').addEventListener('click', (e) => {
+
+                const button = e.target.closest('button');
+
+                if(button) {
+
+                    const vehicleId = document.getElementById('history-vehicle-select').value;
+
+                    if (!vehicleId) {
+
+                        const noVehicleHtml = `
+
+                            <div class="text-center">
+
+                                <h3 class="text-xl font-bold text-red-500 mb-2">Atenção</h3>
+
+                                <p class="text-gray-300 mb-6">Por favor, selecione um veículo primeiro.</p>
+
+                                <button class="modal-close bg-primary-500 hover:bg-primary-600 text-black font-bold py-2 px-6 rounded-lg transition-colors">OK</button>
+
+                            </div>`;
+
+                        showModal(noVehicleHtml);
+
+                        return;
+
+                    }
+
+                    const days = button.dataset.days;
+
+                    const vehicle = currentUserVehicles.find(v => v.id == vehicleId);
+
+                    const path = generateHistory(vehicle, days);
+
+                    drawHistory(path);
+
+                }
+
+            });
+
+
+
+            document.getElementById('clear-history-btn').addEventListener('click', clearHistory);
+
+        }
+
+
+
+        // --- LÓGICA DO PLAYER DE VÍDEO ---
+
+        function openVideoModal() {
+
+            youtubePlayerContainer.innerHTML = `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1&rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+
+            videoModal.classList.remove('hidden');
+
+            setTimeout(() => videoModal.classList.remove('opacity-0'), 10);
+
+        }
+
+
+
+        function closeVideoModal() {
+
+            videoModal.classList.add('opacity-0');
+
+            setTimeout(() => {
+
+                videoModal.classList.add('hidden');
+
+                youtubePlayerContainer.innerHTML = '';
+
+            }, 300);
+
+        }
+
+
+
+        playVideoBtn.addEventListener('click', openVideoModal);
+
+        videoCloseBtn.addEventListener('click', closeVideoModal);
+
+        videoModal.addEventListener('click', (e) => {
+
+            if(e.target === videoModal) {
+
+                closeVideoModal();
+
+            }
+
+        });
+
+
+
+        // --- INICIALIZAÇÃO ---
+
+        showPage(homepage);
+
+    });
+
+    </script>
+
+</body>
+
+</html>
